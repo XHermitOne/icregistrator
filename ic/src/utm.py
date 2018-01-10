@@ -17,7 +17,7 @@ from ic.utils import xmlfunc
 
 from ic import datasrc_proto
 
-__version__ = (0, 0, 2, 1)
+__version__ = (0, 0, 2, 2)
 
 DEFAULT_OUTPUT_XML_FILENAME = 'output.xml'
 
@@ -163,7 +163,11 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
         else:
             content = self.get_http('/opt/out')
             if content:
-                document_urls = content['A']['url']
+                document_urls = content['A'].get('url', list())
+
+                if not document_urls:
+                    log.warning(u'Список входящих документов пуст')
+
                 for document_url in document_urls:
                     if isinstance(document_url, dict) and document_url['@replyId'] == doc_uuid:
                         document_content = self.get_http(document_url['#text'])

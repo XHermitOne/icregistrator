@@ -12,7 +12,7 @@ from ic.utils import txtgen
 
 from ic import datadst_proto
 
-__version__ = (0, 0, 1, 1)
+__version__ = (0, 0, 1, 2)
 
 
 class icSQLQueryDataDestination(datadst_proto.icDataDestinationProto):
@@ -125,6 +125,10 @@ class icSQLQueryDataDestination(datadst_proto.icDataDestinationProto):
             return False
 
         sql = self.gen_sql_code(self.sql)
+        if sql is None:
+            log.warning(u'Ошибка запроса SQL')
+            return False
+
         if not sql.strip():
             log.warning(u'Попытка выполнения пустого запроса SQL')
             return False
