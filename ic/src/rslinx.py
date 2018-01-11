@@ -23,7 +23,7 @@ except ImportError:
 
 from ic import datasrc_proto
 
-__version__ = (0, 0, 3, 1)
+__version__ = (0, 0, 4, 3)
 
 
 class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
@@ -113,11 +113,70 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
                                                 self.gen_code(self.post_cmd),
                                                 *values)
 
+    def _gen_addresses(self, *addresses_values):
+        """
+        Подготовка адресов для чтения. Генерация адресов RSLinx.
+        @param addresses_values: Список имен переменных читаемых адресов.
+        @return: Список сгенерированных адресов.
+            Адреса всегда задаются строками.
+        """
+        addresses = list()
+        for value in addresses_values:
+            code = getattr(self, value)
+            address = self.gen_code(code)
+            if value in self.values:
+                # Если имя адреса используется в генерации других адресов,
+                # то надо обновить значение для следующей генерации
+                link_value = self._read_value(address)
+                setattr(self, value, link_value)
+                self.cache_state[value] = link_value
+            addresses.append(address)
+        return addresses
+
+    def _read_value(self, address):
+        """
+        Прочитать значение по адресу из RSLinx.
+        @param address: Адрес. Адрес задается явно.
+        @return: Прочитанное значение либо None в случае ошибки.
+        """
+        opc = None
+        try:
+            # Создание клиента OPC
+            opc = self.create_opc_client(self.opc_host)
+            if opc is None:
+                log.error(u'Не возможно создать объект клиента OPC. Хост <%s>' % self.opc_host)
+                return None
+
+            # Список серверов OPC
+            servers = opc.servers()
+            if self.opc_server not in servers:
+                log.warning(u'Сервер <%s> не найден среди %s' % (self.opc_server, servers))
+                opc.close()
+                return None
+
+            # Соедиенение с сервером
+            server = self.opc_server
+            opc.connect(server)
+
+            # Прочитать из OPC сервера
+            val = opc.read(address)
+            result = self.recode(val[0]) if val and val[1] == 'Good' else None
+
+            opc.close()
+
+            log.debug(u'Адрес <%s>. Результат чтения данных %s' % (address, result))
+            return result
+        except:
+            if opc:
+                opc.close()
+            log.fatal(u'Ошибка чтения значения по адресу <%s> в <%s>' % (address, self.__class__.__name__))
+        return None
+
     def _read(self, *values):
         """
         Чтение данных из источника данных.
         @param values: Список читаемых переменных.
-        @return: Список прочианных значений.
+        @return: Список прочитанных значений.
             Если переменная не найдена или произошла ошибка чтения, то
             вместо значения подставляется None с указанием WARNING в журнале сообщений.
         """
@@ -148,7 +207,7 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
 
             # Подготовка переменных для чтения
             # Адреса всегда задаются строками
-            addresses = [self.gen_code(getattr(self, value)) for value in values]
+            addresses = self._gen_addresses(*values)
             log.debug(u'Чтение адресов %s' % addresses)
             # Прочитать из OPC сервера
             result = [self.recode(val[1]) if val and val[2] == 'Good' else None for val in opc.read(addresses)]

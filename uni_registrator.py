@@ -32,7 +32,7 @@ from ic import config
 from ic.utils import log
 from ic import engine
 
-__version__ = (0, 0, 5, 2)
+__version__ = (0, 0, 5, 3)
 
 # Команда проверки монопольного выполнения
 PROCESS_LIST_COMMAND = 'ps -eo pid,cmd'
