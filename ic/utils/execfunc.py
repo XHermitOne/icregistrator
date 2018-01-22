@@ -5,6 +5,12 @@
 Модуль функций выполнения запросов и методов пользователя.
 """
 
+# Дополнительно импортируемые модули для создания окружения для выполнения блоков кода
+# vvvvvvvvvvvvvvv
+import uuid
+import datetime
+# ^^^^^^^^^^^^^^^
+
 import os
 import os.path
 import sys
@@ -12,7 +18,7 @@ import imp
 import locale
 from . import log
 
-__versiom__ = (0, 0, 4, 1)
+__versiom__ = (0, 0, 4, 2)
 
 # Сигнатуры блоков кода
 PY_SIGNATURE = u'python:'
