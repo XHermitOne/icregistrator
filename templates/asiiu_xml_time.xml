@@ -43,7 +43,7 @@
  	                </as:Product>
                         <as:ControlDate>{{ control_dt }}</as:ControlDate>
                         <as:VbsControl>{{ sspirit_20_beg }}</as:VbsControl>
-                        <as:AControl>{{ salc_20_beg }}</as:AControl>
+                        <as:AControl>{{ salc_20 }}</as:AControl>
                         <as:PercentAlc>{{ mean_strength }}</as:PercentAlc>
                         <as:BottleCountControl>{{ summ_bottles_count }}</as:BottleCountControl>
                         <as:Temperature>{{ cur_temperature }}</as:Temperature>

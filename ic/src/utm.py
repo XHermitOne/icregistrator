@@ -17,7 +17,7 @@ from ic.utils import xmlfunc
 
 from ic import datasrc_proto
 
-__version__ = (0, 0, 2, 2)
+__version__ = (0, 0, 2, 3)
 
 DEFAULT_OUTPUT_XML_FILENAME = 'output.xml'
 
@@ -120,7 +120,7 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                                       content=content))
             else:
                 document_urls = content['A'].get('url', list())
-                if isinstance(document_urls, str) or isinstance(document_urls, unicode):
+                if type(document_urls) not in (list, tuple):
                     # ВНИМАНИЕ! Может быть только 1 документ
                     # Все равно мы должны обрабатывать список
                     document_urls = [document_urls]
@@ -128,16 +128,21 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                 if not document_urls:
                     log.warning(u'Список входящих документов ЕГАИС УТМ пуст')
                     return documents
+                else:
+                    #
+                    log.debug(u'Обрабатываемые документы. URLs:')
+                    for document_url in document_urls:
+                        log.debug(u'\t%s' % document_url)
 
                 for document_url in document_urls:
                     if isinstance(document_url, str) or isinstance(document_url, unicode):
-                        log.debug(u'Получаем документ URL <%s>' % document_url)
+                        log.debug(u'Получаем документ URL (str) <%s>' % document_url)
                         document_content = self.get_http(document_url)
                         documents.append(dict(url=document_url,
                                               uuid=str(uuid.uuid4()),
                                               content=document_content))
                     elif isinstance(document_url, dict):
-                        log.debug(u'Получаем документ URL <%s>' % document_url['#text'])
+                        log.debug(u'Получаем документ URL (dict) <%s>' % document_url['#text'])
                         document_content = self.get_http(document_url['#text'])
                         documents.append(dict(url=document_url['#text'],
                                               uuid=document_url['@replyId'],
@@ -164,6 +169,10 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
             content = self.get_http('/opt/out')
             if content:
                 document_urls = content['A'].get('url', list())
+                if type(document_urls) not in (list, tuple):
+                    # ВНИМАНИЕ! Может быть только 1 документ
+                    # Все равно мы должны обрабатывать список
+                    document_urls = [document_urls]
 
                 if not document_urls:
                     log.warning(u'Список входящих документов пуст')
@@ -176,6 +185,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                         # иначе нельзя будет идентифицировать документ
                         # return document_content
                         return dict(url=document_url['#text'], uuid=doc_uuid, content=document_content)
+                    elif isinstance(document_url, str) or isinstance(document_url, unicode):
+                        document_content = self.get_http(document_url)
+                        return dict(url=document_url, uuid=doc_uuid, content=document_content)
                 log.warning(u'Документ <%s> не найден во входящих' % doc_uuid)
             else:
                 log.warning(u'Нет ответа от УТМ')
