@@ -10,6 +10,8 @@
 import os
 import os.path
 import uuid
+import datetime
+import shutil
 
 from ic.utils import log
 from ic.utils import execfunc
@@ -17,7 +19,7 @@ from ic.utils import xmlfunc
 
 from ic import datasrc_proto
 
-__version__ = (0, 0, 2, 3)
+__version__ = (0, 0, 3, 1)
 
 DEFAULT_OUTPUT_XML_FILENAME = 'output.xml'
 
@@ -69,7 +71,12 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
 
             content = None
             if os.path.exists(output_xml_filename):
-                content = xmlfunc.load_xml_content(output_xml_filename)
+                try:
+                    content = xmlfunc.load_xml_content(output_xml_filename)
+                except:
+                    log.error(u'Ошибка XML файла данных <%s>' % output_xml_filename)
+                    self._backup_error_file(output_xml_filename)
+                    raise
             else:
                 log.warning(u'Не найден выходной файл УТМ <%s>' % output_xml_filename)
 
@@ -77,6 +84,26 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
         except:
             log.fatal(u'Ошибка получения содержания УТМ по адресу <%s>' % url)
         return None
+
+    def _backup_error_file(self, src_filename, err_filename=None):
+        """
+        Сохранить ошибочный файл в папке.
+        @param src_filename: Имя исходного ошибочного файла.
+        @param err_filename: Имя нового файла.
+            Если не определено, то имя генерируется по времени.
+        @return: True/False.
+        """
+        if err_filename is None:
+            err_filename = os.path.join(str(self.output_dir),
+                                        datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S.err'))
+        try:
+            if os.path.exists(err_filename):
+                os.remove(err_filename)
+            shutil.copyfile(src_filename, err_filename)
+            return True
+        except:
+            log.fatal(u'Ошибка сохранения ошибочного файла')
+        return False
 
     def get_content_error(self, content):
         """
