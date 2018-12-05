@@ -10,11 +10,12 @@ import os.path
 import glob
 
 from ic.utils import log
+from ic.utils import journal
 from ic.utils import execfunc
 
 from ic import datasrc_proto
 
-__version__ = (0, 0, 0, 1)
+__version__ = (0, 0, 1, 1)
 
 
 class icFileListDataSource(datasrc_proto.icDataSourceProto):
@@ -59,7 +60,9 @@ class icFileListDataSource(datasrc_proto.icDataSourceProto):
         @return: Список имен файлов.
         """
         if not self.filename_pattern:
-            log.warning(u'Не определен шаблон поиска файлов')
+            msg = u'Не определен шаблон поиска файлов'
+            log.warning(msg)
+            journal.write_msg(msg)
             return list()
 
         filenames = glob.glob(self.filename_pattern)

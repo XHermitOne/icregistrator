@@ -12,12 +12,13 @@ import datetime
 from ic import config
 from ic.utils import log
 from ic.utils import keyboardfunc
+from ic.utils import journal
 
 from . import settings
 from . import src
 from . import dst
 
-__version__ = (0, 0, 3, 1)
+__version__ = (0, 0, 4, 1)
 
 # Сигнатура ссылки
 LINK_SIGNATURE = u'link:'
@@ -272,16 +273,21 @@ class icRegistrator(icRegistratorProto):
             if not config.QUEUE:
                 log.info(u'Порядок обработки штатный')
                 log.info(u'Начало обработки...')
+                journal.write_msg(u'Начало обработки...')
                 for src_object in src_objects:
                     log.info(u'Чтение данных из <%s>' % src_object.name)
+                    journal.write_msg(u'\tЧтение данных из <%s>' % src_object.description)
                     src_object.read_as_dict()
                 for dst_object in dst_objects:
                     log.info(u'Запись данных в <%s>' % dst_object.name)
+                    journal.write_msg(u'\tЗапись данных в <%s>' % dst_object.description)
                     dst_object.write_as_dict()
                 log.info(u'...Конец обработки [%d]' % n_tick)
+                journal.write_msg(u'...Конец обработки')
             else:
                 log.info(u'Порядок обработки задан явно %s' % config.QUEUE)
                 log.info(u'Начало обработки...')
+                journal.write_msg(u'Начало обработки...')
                 for obj_properties in config.QUEUE:
                     obj_name = obj_properties['name']
                     obj = self.find_object(obj_name)
@@ -290,15 +296,18 @@ class icRegistrator(icRegistratorProto):
                         if obj_type in src.DATA_SOURCES.keys():
                             # Это источник данных
                             log.info(u'Чтение данных из <%s>' % obj.name)
+                            journal.write_msg(u'\tЧтение данных из <%s>' % obj.description)
                             obj.read_as_dict()
                         elif obj_type in dst.DATA_DESTINATIONS.keys():
                             # Это получатель данных
                             log.info(u'Запись данных в <%s>' % obj.name)
+                            journal.write_msg(u'\tЗапись данных в <%s>' % obj.description)
                             obj.write_as_dict()
                         else:
                             # Вообще не определенный тип
                             log.warning(u'Не поддерживаемый тип <%s> объекта <%s>' % (obj_type, obj_name))
                 log.info(u'...Конец обработки [%d]' % n_tick)
+                journal.write_msg(u'...Конец обработки')
 
             # Сбросить кеш состояния в конце такта
             # obj_list = src_objects + dst_objects

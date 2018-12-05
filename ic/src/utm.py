@@ -14,12 +14,13 @@ import datetime
 import shutil
 
 from ic.utils import log
+from ic.utils import journal
 from ic.utils import execfunc
 from ic.utils import xmlfunc
 
 from ic import datasrc_proto
 
-__version__ = (0, 0, 3, 1)
+__version__ = (0, 0, 4, 1)
 
 DEFAULT_OUTPUT_XML_FILENAME = 'output.xml'
 
@@ -65,7 +66,10 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                     log.info(u'Удаление файла <%s>' % output_xml_filename)
                     os.remove(output_xml_filename)
                 except:
-                    log.fatal(u'Ошибка удаления файла <%s>' % output_xml_filename)
+                    msg = u'Ошибка удаления файла <%s>' % output_xml_filename
+                    log.fatal(msg)
+                    journal.write_msg(msg)
+
             cmd = '"%s" --output "%s" -X GET %s' % (self.curl, output_xml_filename, url)
             execfunc.exec_shell(cmd)
 
@@ -74,15 +78,21 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                 try:
                     content = xmlfunc.load_xml_content(output_xml_filename)
                 except:
-                    log.error(u'Ошибка XML файла данных <%s>' % output_xml_filename)
+                    msg = u'Ошибка XML файла данных <%s>' % output_xml_filename
+                    log.error(msg)
+                    journal.write_msg(msg)
                     self._backup_error_file(output_xml_filename)
                     raise
             else:
-                log.warning(u'Не найден выходной файл УТМ <%s>' % output_xml_filename)
+                msg = u'Не найден выходной файл УТМ <%s>' % output_xml_filename
+                log.warning(msg)
+                journal.write_msg(msg)
 
             return content
         except:
-            log.fatal(u'Ошибка получения содержания УТМ по адресу <%s>' % url)
+            msg = u'Ошибка получения содержания УТМ по адресу <%s>' % url
+            log.fatal(msg)
+            journal.write_msg(msg)
         return None
 
     def _backup_error_file(self, src_filename, err_filename=None):
@@ -102,7 +112,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
             shutil.copyfile(src_filename, err_filename)
             return True
         except:
-            log.fatal(u'Ошибка сохранения ошибочного файла')
+            msg = u'Ошибка сохранения ошибочного файла'
+            log.fatal(msg)
+            journal.write_msg(msg)
         return False
 
     def get_content_error(self, content):
@@ -112,17 +124,23 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
         @return: Текст ошибки, None - нет ошибки.
         """
         if content is None:
-            log.warning(u'Не определено содержание для проверки на ошибки')
+            msg = u'Не определено содержание для проверки на ошибки'
+            log.warning(msg)
+            journal.write_msg(msg)
             return None
 
         if 'A' not in content:
-            log.warning(u'Не корректный формат <%s>' % content)
+            msg = u'Не корректный формат <%s>' % content
+            log.warning(msg)
+            journal.write_msg(msg)
             return None
 
         if 'error' in content['A']:
             err_txt = content['A']['error']
             # Отобразить контент для отладки
-            log.error(u'Error content: <%s>' % content)
+            msg = u'Ошибка содержимого: <%s>' % content
+            log.error(msg)
+            journal.write_msg(msg)
             return err_txt
         return None
 
@@ -135,7 +153,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
 
         content = self.get_http('/opt/out')
         if content is None:
-            log.warning(u'Ошибка определения данных по адресу </opt/out>')
+            msg = u'Ошибка определения данных по адресу </opt/out>'
+            log.warning(msg)
+            journal.write_msg(msg)
             return None
 
         if not self.get_content_error(content):
@@ -153,7 +173,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                     document_urls = [document_urls]
 
                 if not document_urls:
-                    log.warning(u'Список входящих документов ЕГАИС УТМ пуст')
+                    msg = u'Список входящих документов ЕГАИС УТМ пуст'
+                    log.warning(msg)
+                    journal.write_msg(msg)
                     return documents
                 else:
                     #
@@ -175,7 +197,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                                               uuid=document_url['@replyId'],
                                               content=document_content))
                     else:
-                        log.warning(u'Не обрабатываемый тип адреса документа <%s>' % document_url)
+                        msg = u'Не обрабатываемый тип адреса документа <%s>' % document_url
+                        log.warning(msg)
+                        journal.write_msg(msg)
 
             return documents
         else:
@@ -191,7 +215,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
             if doc_uuid in self.cache_state[INBOX_STATE_NAME]:
                 return self.cache_state[INBOX_STATE_NAME][doc_uuid]
             else:
-                log.warning(u'Кеш источника данных <%s>. Документ <%s> не найден во входящих' % (self.name, doc_uuid))
+                msg = u'Кеш источника данных <%s>. Документ <%s> не найден во входящих' % (self.name, doc_uuid)
+                log.warning(msg)
+                journal.write_msg(msg)
         else:
             content = self.get_http('/opt/out')
             if content:
@@ -202,7 +228,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                     document_urls = [document_urls]
 
                 if not document_urls:
-                    log.warning(u'Список входящих документов пуст')
+                    msg = u'Список входящих документов пуст'
+                    log.warning(msg)
+                    journal.write_msg(msg)
 
                 for document_url in document_urls:
                     if isinstance(document_url, dict) and document_url['@replyId'] == doc_uuid:
@@ -215,9 +243,13 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                     elif isinstance(document_url, str) or isinstance(document_url, unicode):
                         document_content = self.get_http(document_url)
                         return dict(url=document_url, uuid=doc_uuid, content=document_content)
-                log.warning(u'Документ <%s> не найден во входящих' % doc_uuid)
+                msg = u'Документ <%s> не найден во входящих' % doc_uuid
+                log.warning(msg)
+                journal.write_msg(msg)
             else:
-                log.warning(u'Нет ответа от УТМ')
+                msg = u'Нет ответа от УТМ'
+                log.warning(msg)
+                journal.write_msg(msg)
         return None
 
     def del_http(self, url):
@@ -242,7 +274,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                     log.info(u'Удаление файла <%s>' % output_xml_filename)
                     os.remove(output_xml_filename)
                 except:
-                    log.fatal(u'Ошибка удаления файла <%s>' % output_xml_filename)
+                    msg = u'Ошибка удаления файла <%s>' % output_xml_filename
+                    log.fatal(msg)
+                    journal.write_msg(msg)
 
             cmd = '"%s" --output "%s" -X DELETE %s' % (self.curl, output_xml_filename, url)
             execfunc.exec_shell(cmd)
@@ -253,7 +287,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                 content = self.valid_content(content)
                 return content
         except:
-            log.fatal(u'Ошибка удаления данных УТМ по адресу <%s>' % url)
+            msg = u'Ошибка удаления данных УТМ по адресу <%s>' % url
+            log.fatal(msg)
+            journal.write_msg(msg)
         return None
 
     def valid_content(self, content):
@@ -262,12 +298,16 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
         @param content: Содержание в текстовом виде.
         """
         if CURL_HTTP_404_ERR in content:
-            log.error(u'Http 404')
+            msg = u'Http 404'
+            log.error(msg)
             log.error(content)
+            journal.write_msg(msg)
             return None
         elif CURL_HTTP_500_ERR in content:
-            log.error(u'Http 500')
+            msg = u'Http 500'
+            log.error(msg)
             log.error(content)
+            journal.write_msg(msg)
             return None
         return content
 
@@ -333,7 +373,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
 
             return inbox_docs
         except:
-            log.fatal(u'Ошибка чтения входящих документов УТМ')
+            msg = u'Ошибка чтения входящих документов УТМ'
+            log.fatal(msg)
+            journal.write_msg(msg)
         return None
 
     def read_as_dict(self, *values):
@@ -390,7 +432,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
         @return: Список заполненных словарей запрашиваемых данных для документа.
         """
         if doc_uuid is None:
-            log.warning(u'УТМ. Не определен UUID документа при запросе данных')
+            msg = u'УТМ. Не определен UUID документа при запросе данных'
+            log.warning(msg)
+            journal.write_msg(msg)
             return dict([(name, None) for name in content_links.keys()])
 
         doc_content = self.find_inbox_document(doc_uuid)
@@ -404,7 +448,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                 result[name] = value
             return result
         else:
-            log.warning(u'УТМ. Ошибка чтения содержимого документа <%s>' % doc_uuid)
+            msg = u'УТМ. Ошибка чтения содержимого документа <%s>' % doc_uuid
+            log.warning(msg)
+            journal.write_msg(msg)
 
         return None
 
@@ -429,7 +475,9 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
         result = list()
         for doc_uuid in doc_uuids:
             if not doc_uuid:
-                log.warning(u'УТМ. Не корректный UUID запрашиваемого документа <%s>' % doc_uuid)
+                msg = u'УТМ. Не корректный UUID запрашиваемого документа <%s>' % doc_uuid
+                log.warning(msg)
+                journal.write_msg(msg)
                 continue
             doc = self.parse_inbox_doc(doc_uuid, str_replaces=str_replaces, **content_links)
             if doc is not None:

@@ -13,12 +13,13 @@ import os
 import os.path
 import glob
 from ic.utils import log
+from ic.utils import journal
 from ic.utils import execfunc
 from ic.utils import xmlfunc
 
 from ic import datasrc_proto
 
-__version__ = (0, 0, 1, 1)
+__version__ = (0, 0, 2, 1)
 
 
 class icXMLFileDataSource(datasrc_proto.icDataSourceProto):
@@ -94,7 +95,9 @@ class icXMLFileDataSource(datasrc_proto.icDataSourceProto):
                             log.info(u'Удаление файла <%s>' % xml_filename)
                             os.remove(xml_filename)
                         except:
-                            log.fatal(u'Ошибка удаления файла <%s>' % xml_filename)
+                            msg = u'Ошибка удаления файла <%s>' % xml_filename
+                            log.fatal(msg)
+                            journal.write_msg(msg)
 
             return result
         except:
@@ -146,7 +149,9 @@ class icXMLFileDataSource(datasrc_proto.icDataSourceProto):
             return self.cache_xml_filenames
 
         if self.xml_filename is None:
-            log.warning(u'Не определены XML файлы источника данных <%s>' % self.__class__.__name__)
+            msg = u'Не определены XML файлы источника данных <%s>' % self.__class__.__name__
+            log.warning(msg)
+            journal.write_msg(msg)
             return list()
 
         xml_filenames = list()

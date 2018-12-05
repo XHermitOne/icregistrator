@@ -23,6 +23,9 @@ PROFILE_DIR = os.path.join(os.environ.get('HOME', os.path.join(os.path.dirname(o
 LOG_FILENAME = os.path.join(PROFILE_DIR, 
                             '%s_%s.log' % (PRJ_NAME, datetime.date.today().isoformat()))
 
+JOURNAL_FILENAME = os.path.join(PROFILE_DIR,
+                                '%s_%s.jrn' % (PRJ_NAME, datetime.date.today().isoformat()))
+
 DEBUG_MODE = True
 LOG_MODE = True
 

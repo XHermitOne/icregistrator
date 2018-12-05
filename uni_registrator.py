@@ -30,9 +30,10 @@ import getopt
 
 from ic import config
 from ic.utils import log
+from ic.utils import journal
 from ic import engine
 
-__version__ = (0, 0, 5, 3)
+__version__ = (0, 0, 6, 1)
 
 # Команда проверки монопольного выполнения
 PROCESS_LIST_COMMAND = 'ps -eo pid,cmd'
@@ -46,6 +47,7 @@ def main(argv):
     """
     # Инициализация журналирования
     log.init(config)
+    journal.init(config.JOURNAL_FILENAME)
 
     # Разбираем аргументы командной строки
     try:

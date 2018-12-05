@@ -6,12 +6,13 @@
 """
 
 from ic.utils import log
+from ic.utils import journal
 
 from ic import datadst_proto
 from ic.utils import txtgen
 from ic.utils import execfunc
 
-__version__ = (0, 0, 2, 2)
+__version__ = (0, 0, 3, 1)
 
 
 class icTxtFmtDataDestination(datadst_proto.icDataDestinationProto):
@@ -49,11 +50,15 @@ class icTxtFmtDataDestination(datadst_proto.icDataDestinationProto):
         @return: True/False.
         """
         if self.template_fmt is None:
-            log.warning(u'Не указан шаблон для заполнения форматированного текстового файла.')
+            msg = u'Не указан шаблон для заполнения форматированного текстового файла.'
+            log.warning(msg)
+            journal.write_msg(msg)
             return False
 
         if self.output_fmt is None:
-            log.warning(u'Не указан выходной файл для заполнения форматированного текстового файла.')
+            msg = u'Не указан выходной файл для заполнения форматированного текстового файла.'
+            log.warning(msg)
+            journal.write_msg(msg)
             return False
 
         context = self.get_values_as_dict()
@@ -84,11 +89,15 @@ class icTxtFmtDataDestination(datadst_proto.icDataDestinationProto):
         @return: True/False.
         """
         if self.template_fmt is None:
-            log.warning(u'Не указан шаблон для заполнения форматированного текстового файла.')
+            msg = u'Не указан шаблон для заполнения форматированного текстового файла.'
+            log.warning(msg)
+            journal.write_msg(msg)
             return False
 
         if self.output_fmt is None:
-            log.warning(u'Не указан выходной файл для заполнения форматированного текстового файла.')
+            msg = u'Не указан выходной файл для заполнения форматированного текстового файла.'
+            log.warning(msg)
+            journal.write_msg(msg)
             return False
 
         context = self.get_values_as_dict()

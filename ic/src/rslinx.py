@@ -12,6 +12,7 @@ OpenRPC (http://openopc.sourceforge.net).
 """
 
 from ic.utils import log
+from ic.utils import journal
 from ic.utils import txtgen
 from ic.utils import execfunc
 from ic import config
@@ -23,7 +24,7 @@ except ImportError:
 
 from ic import datasrc_proto
 
-__version__ = (0, 0, 4, 3)
+__version__ = (0, 0, 5, 1)
 
 
 class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
@@ -62,7 +63,9 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
         @return: Объект OPC сервера.
         """
         if type(opc_host) not in (None.__class__, str, unicode):
-            log.error(u'Не корректный тип хоста OPC сервера <%s>' % type(opc_host))
+            msg = u'Не корректный тип хоста OPC сервера <%s>' % type(opc_host)
+            log.error(msg)
+            journal.write_msg(msg)
             return None
 
         is_local_opc = (opc_host is None) or (type(opc_host) in (str, unicode) and opc_host.lower().strip() in ('localhost', '127.0.0.1'))
@@ -144,13 +147,17 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
             # Создание клиента OPC
             opc = self.create_opc_client(self.opc_host)
             if opc is None:
-                log.error(u'Не возможно создать объект клиента OPC. Хост <%s>' % self.opc_host)
+                msg = u'Не возможно создать объект клиента OPC. Хост <%s>' % self.opc_host
+                log.error(msg)
+                journal.write_msg(msg)
                 return None
 
             # Список серверов OPC
             servers = opc.servers()
             if self.opc_server not in servers:
-                log.warning(u'Сервер <%s> не найден среди %s' % (self.opc_server, servers))
+                msg = u'Сервер <%s> не найден среди %s' % (self.opc_server, servers)
+                log.warning(msg)
+                journal.write_msg(msg)
                 opc.close()
                 return None
 
@@ -169,7 +176,9 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
         except:
             if opc:
                 opc.close()
-            log.fatal(u'Ошибка чтения значения по адресу <%s> в <%s>' % (address, self.__class__.__name__))
+            msg = u'Ошибка чтения значения по адресу <%s> в <%s>' % (address, self.__class__.__name__)
+            log.fatal(msg)
+            journal.write_msg(msg)
         return None
 
     def _read(self, *values):
@@ -191,13 +200,17 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
             # Создание клиента OPC
             opc = self.create_opc_client(self.opc_host)
             if opc is None:
-                log.error(u'Не возможно создать объект клиента OPC. Хост <%s>' % self.opc_host)
+                msg = u'Не возможно создать объект клиента OPC. Хост <%s>' % self.opc_host
+                log.error(msg)
+                journal.write_msg(msg)
                 return None
 
             # Список серверов OPC
             servers = opc.servers()
             if self.opc_server not in servers:
-                log.warning(u'Сервер <%s> не найден среди %s' % (self.opc_server, servers))
+                msg = u'Сервер <%s> не найден среди %s' % (self.opc_server, servers)
+                log.warning(msg)
+                journal.write_msg(msg)
                 opc.close()
                 return None
 
@@ -226,7 +239,9 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
         except:
             if opc:
                 opc.close()
-            log.fatal(u'Ошибка чтения данных <%s>' % self.__class__.__name__)
+            msg = u'Ошибка чтения данных <%s>' % self.__class__.__name__
+            log.fatal(msg)
+            journal.write_msg(msg)
         return None
 
     def read_as_dict(self, *values):
@@ -263,24 +278,32 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
         log.info(u'Диагностика <%s>.<%s>' % (self.__class__.__name__, self.name))
 
         if self.opc_server is None:
-            log.warning(u'Не определен OPC сервер в <%s>' % self.name)
+            msg = u'Не определен OPC сервер в <%s>' % self.name
+            log.warning(msg)
+            journal.write_msg(msg)
             return False
 
         if self.topic is None:
-            log.warning(u'Не определен топик в <%s>' % self.name)
+            msg = u'Не определен топик в <%s>' % self.name
+            log.warning(msg)
+            journal.write_msg(msg)
             return False
 
         try:
             # Создание клиента OPC
             opc = self.create_opc_client(self.opc_host)
             if opc is None:
-                log.error(u'Не возможно создать объект клиента OPC. Хост <%s>' % self.opc_host)
+                msg = u'Не возможно создать объект клиента OPC. Хост <%s>' % self.opc_host
+                log.error(msg)
+                journal.write_msg(msg)
                 return None
 
             # Список серверов OPC
             servers = opc.servers()
             if self.opc_server not in servers:
-                log.warning(u'Сервер <%s> не найден среди %s' % (self.opc_server, servers))
+                msg = u'Сервер <%s> не найден среди %s' % (self.opc_server, servers)
+                log.warning(msg)
+                journal.write_msg(msg)
                 opc.close()
                 return False
 
@@ -298,7 +321,9 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
             # Список интерфейсов servers
             topics = opc.list()
             if self.topic not in topics:
-                log.warning(u'Топик <%s> не найден среди %s' % (self.topic, topics))
+                msg = u'Топик <%s> не найден среди %s' % (self.topic, topics)
+                log.warning(msg)
+                journal.write_msg(msg)
                 opc.close()
                 return False
 
@@ -322,5 +347,7 @@ class icRSLinxDataSource(datasrc_proto.icDataSourceProto):
         except:
             if opc:
                 opc.close()
-            log.fatal(u'Ошибка диагностики <%s>' % self.__class__.__name__)
+            msg = u'Ошибка диагностики <%s>' % self.__class__.__name__
+            log.fatal(msg)
+            journal.write_msg(msg)
         return False

@@ -7,12 +7,13 @@
 
 import sqlalchemy
 from ic.utils import log
+from ic.utils import journal
 from ic.utils import execfunc
 from ic.utils import txtgen
 
 from ic import datadst_proto
 
-__version__ = (0, 0, 1, 2)
+__version__ = (0, 0, 2, 1)
 
 
 class icSQLQueryDataDestination(datadst_proto.icDataDestinationProto):
@@ -69,7 +70,9 @@ class icSQLQueryDataDestination(datadst_proto.icDataDestinationProto):
             #                                                         V
             self.connection = sqlalchemy.create_engine(db_url, echo=False)
         except:
-            log.fatal(u'Ошибка соединения с БД <%s>' % db_url)
+            msg = u'Ошибка соединения с БД <%s>' % db_url
+            log.fatal(msg)
+            journal.write_msg(msg)
             self.connection = None
         return self.connection
 
@@ -89,7 +92,9 @@ class icSQLQueryDataDestination(datadst_proto.icDataDestinationProto):
             connection = None
             return True
         else:
-            log.warning(u'Не определен объект связи с БД в <%s>' % self.name)
+            msg = u'Не определен объект связи с БД в <%s>' % self.name
+            log.warning(msg)
+            journal.write_msg(msg)
         return False
 
     def diagnostic(self):
@@ -121,16 +126,22 @@ class icSQLQueryDataDestination(datadst_proto.icDataDestinationProto):
         @return: True/False.
         """
         if not self.sql:
-            log.warning(u'Не определено SQL выражение для записи данных в <%s>' % self.name)
+            msg = u'Не определено SQL выражение для записи данных в <%s>' % self.name
+            log.warning(msg)
+            journal.write_msg(msg)
             return False
 
         sql = self.gen_sql_code(self.sql)
         if sql is None:
-            log.warning(u'Ошибка запроса SQL')
+            msg = u'Ошибка запроса SQL'
+            log.warning(msg)
+            journal.write_msg(msg)
             return False
 
         if not sql.strip():
-            log.warning(u'Попытка выполнения пустого запроса SQL')
+            msg = u'Попытка выполнения пустого запроса SQL'
+            log.warning(msg)
+            journal.write_msg(msg)
             return False
 
         try:
@@ -141,7 +152,9 @@ class icSQLQueryDataDestination(datadst_proto.icDataDestinationProto):
             return True
         except:
             self.disconnect()
-            log.fatal(u'Ошибка записи данных в <%s>' % self.name)
+            msg = u'Ошибка записи данных в <%s>' % self.name
+            log.fatal(msg)
+            journal.write_msg(msg)
         return False
 
     def write_as_dict(self, **values):
@@ -188,6 +201,8 @@ class icSQLQueryDataDestination(datadst_proto.icDataDestinationProto):
                 try:
                     context[name] = value.replace('\'', '"')
                 except UnicodeEncodeError:
-                    log.fatal(u'Ошибка замены кавычек в значении <%s>' % value)
+                    msg = u'Ошибка замены кавычек в значении <%s>' % value
+                    log.fatal(msg)
+                    journal.write_msg(msg)
         result = self.gen_code(code, context)
         return result

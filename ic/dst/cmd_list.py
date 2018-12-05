@@ -6,11 +6,12 @@
 """
 
 from ic.utils import log
+from ic.utils import journal
 
 from ic import datadst_proto
 from ic.utils import execfunc
 
-__version__ = (0, 0, 0, 1)
+__version__ = (0, 0, 1, 1)
 
 
 class icCmdListDataDestination(datadst_proto.icDataDestinationProto):
