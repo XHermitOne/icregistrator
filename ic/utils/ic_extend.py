@@ -920,12 +920,15 @@ def getHomeDir():
 def text_file_append(sTextFileName, sText, CR='\n'):
     """
     Добавить строки в текстовый файл.
+    Если файл не существует, то файл создается.
     @param sTextFileName: Имя текстового файла.
     @param sText: Добавляемый текст.
     @param CR: Символ возврата каретки.
     @return: True/False.
     """
     txt_filename = normpath(sTextFileName, get_login())
+    txt = ''
+
     if os.path.exists(txt_filename):
         f = None
         try:
@@ -935,19 +938,26 @@ def text_file_append(sTextFileName, sText, CR='\n'):
             txt += sText
             print('Text file append <%s> in <%s>' % (sText, txt_filename))
             f.close()
-            f = None
-            f = open(txt_filename, 'wt')
-            f.write(txt)
-            f.close()
-            f = None
-            return True
         except:
             print('Text file append in <%s>' % txt_filename)
             if f:
                 f.close()
                 f = None
     else:
-        print('File <%s> not exists' % txt_filename)
+        txt = sText
+
+    f = None
+    try:
+        f = open(txt_filename, 'wt')
+        f.write(txt)
+        f.close()
+        f = None
+        return True
+    except:
+        print('Text file append in <%s>' % txt_filename)
+        if f:
+            f.close()
+            f = None
     return False
 
 
