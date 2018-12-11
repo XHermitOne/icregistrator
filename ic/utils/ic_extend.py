@@ -22,7 +22,7 @@ try:
 except:
     print(u'Import error ic_str module')
 
-__version__ = (0, 0, 1, 1)
+__version__ = (0, 0, 1, 2)
 
 
 DEFAULT_ENCODING = 'utf-8'
@@ -360,7 +360,14 @@ def get_login():
     """
     Имя залогинненного пользователя.
     """
-    username = os.environ['USERNAME']
+    username = 'unknown'
+    if 'USERNAME' in os.environ:
+        username = os.environ['USERNAME']
+    elif 'USER' in os.environ:
+        username = os.environ['USER']
+    elif 'LOGNAME' in os.environ:
+        username = os.environ['LOGNAME']
+
     if username != 'root':
         return username
     else:
