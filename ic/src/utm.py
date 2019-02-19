@@ -20,7 +20,7 @@ from ic.utils import xmlfunc
 
 from ic import datasrc_proto
 
-__version__ = (0, 0, 4, 1)
+__version__ = (0, 0, 4, 2)
 
 DEFAULT_OUTPUT_XML_FILENAME = 'output.xml'
 
@@ -241,8 +241,10 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                         # return document_content
                         return dict(url=document_url['#text'], uuid=doc_uuid, content=document_content)
                     elif isinstance(document_url, str) or isinstance(document_url, unicode):
-                        document_content = self.get_http(document_url)
-                        return dict(url=document_url, uuid=doc_uuid, content=document_content)
+                        # Внимание! Если документ имеет родительский документ - то есть и replyId,
+                        # если документ первичный - то и нет для него replyId
+                        # Т.е. не правильно ого искать по UUID
+                        continue
                 msg = u'Документ <%s> не найден во входящих' % doc_uuid
                 log.warning(msg)
                 journal.write_msg(msg)
