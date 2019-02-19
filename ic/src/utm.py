@@ -244,6 +244,7 @@ class icUTMDataSource(datasrc_proto.icDataSourceProto):
                         # Внимание! Если документ имеет родительский документ - то есть и replyId,
                         # если документ первичный - то и нет для него replyId
                         # Т.е. не правильно ого искать по UUID
+                        log.warning(u'Поиск. Внешний первичный документ <%s> пропущен' % document_url)
                         continue
                 msg = u'Документ <%s> не найден во входящих' % doc_uuid
                 log.warning(msg)
