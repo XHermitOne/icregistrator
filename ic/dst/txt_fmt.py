@@ -12,7 +12,7 @@ from ic import datadst_proto
 from ic.utils import txtgen
 from ic.utils import execfunc
 
-__version__ = (0, 0, 3, 1)
+__version__ = (0, 0, 4, 1)
 
 
 class icTxtFmtDataDestination(datadst_proto.icDataDestinationProto):
@@ -29,6 +29,19 @@ class icTxtFmtDataDestination(datadst_proto.icDataDestinationProto):
         self.template_fmt = kwargs.get('template', None)
         # Выходной файл
         self.output_fmt = kwargs.get('output', None)
+        # Проверка заполнения всех значений
+        self.all_values = kwargs.get('all_values', None)
+
+    def valid_all_values(self, *values):
+        """
+        Проверка заполнения всех значений.
+        Если хотя бы одно из значений None, то зполнение считается не полным.
+        @param values: Список записываемых значений
+        @return: True - все значения заполнены /
+            False - не заполненно хотя бы одно значение поэтому текстовый файл не генрируется.
+        """
+        context = self.get_values_as_dict()
+        return all([context.get(name, None) is not None for name in values])
 
     def write(self, *values):
         """
@@ -37,6 +50,14 @@ class icTxtFmtDataDestination(datadst_proto.icDataDestinationProto):
         @param values: Список записываемых значений
         @return: True/False.
         """
+        if self.all_values:
+            # Необходимо провести проверку на заполнение всех значений
+            if not self.valid_all_values(*values):
+                msg = u'Не полностью заполнены входные значения для генерации файла <%s>' % str(self.output_fmt)
+                log.warning(msg)
+                journal.write_msg(msg)
+                return False
+
         # Перед выполнение произвести замену из контекста
         return execfunc.exec_prev_post_decorate(self._write,
                                                 self.gen_code(self.prev_cmd),
