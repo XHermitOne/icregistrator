@@ -20,7 +20,7 @@ icRegistrator - Программа автоматической регистра
         --alone             Проверка монопольного выполнения (только одного экземпляра программы)
 
     [Дополнительные параметры]
-        --run_mode=         Режимы запуска регистратора single/loop/diagnostic
+        --run_mode=         Режимы запуска регистратора single/loop/src_diagnostic/dst_diagnostic
         --settings=         Файл настроек. Если не определен, то берется settings.ini
 """
 
@@ -33,7 +33,7 @@ from ic.utils import log
 from ic.utils import journal
 from ic import engine
 
-__version__ = (0, 0, 6, 1)
+__version__ = (0, 0, 7, 1)
 
 # Команда проверки монопольного выполнения
 PROCESS_LIST_COMMAND = 'ps -eo pid,cmd'
