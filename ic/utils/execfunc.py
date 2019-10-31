@@ -186,6 +186,7 @@ def exec_cmd(cmd):
             result = False
     return result
 
+
 # Символ перевода каретки
 EOL = '\r\n' if sys.platform.startswith('win') else '\n'
 

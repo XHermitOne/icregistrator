@@ -12,7 +12,7 @@ from ic import datadst_proto
 from ic.utils import txtgen
 from ic.utils import execfunc
 
-__version__ = (0, 0, 4, 1)
+__version__ = (0, 0, 4, 2)
 
 
 class icTxtFmtDataDestination(datadst_proto.icDataDestinationProto):
@@ -30,7 +30,7 @@ class icTxtFmtDataDestination(datadst_proto.icDataDestinationProto):
         # Выходной файл
         self.output_fmt = kwargs.get('output', None)
         # Проверка заполнения всех значений
-        self.all_values = kwargs.get('all_values', None)
+        self.all_values = kwargs.get('all_values', False)
 
     def valid_all_values(self, *values):
         """
@@ -41,7 +41,7 @@ class icTxtFmtDataDestination(datadst_proto.icDataDestinationProto):
             False - не заполненно хотя бы одно значение поэтому текстовый файл не генрируется.
         """
         context = self.get_values_as_dict()
-        return all([context.get(name, None) is not None for name in values])
+        return all([context.get(name, None) not in (None, 'None') for name in values])
 
     def write(self, *values):
         """
